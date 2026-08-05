@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Utilização da Prensa · Oba Hortifruti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1118; --bg2:#0a0b10;
+    --accent:#FF6A1A; --accent2:#ff9248;
+    --txt:#f5f2ea; --txt2:#aeb3c2;
+    --line:rgba(255,255,255,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);overflow:hidden;
+    font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--txt)}
+  .stage{position:fixed;inset:0;background:radial-gradient(120% 120% at 70% 30%,var(--bg) 0%,var(--bg2) 100%)}
+
+  video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+
+  .veil{position:absolute;inset:0;pointer-events:none;
+    background:
+      linear-gradient(180deg,rgba(8,9,14,.55) 0%,rgba(8,9,14,0) 18%,rgba(8,9,14,0) 80%,rgba(8,9,14,.35) 100%)}
+
+  .top{position:absolute;top:0;left:0;right:0;z-index:5;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:3vh 3.5vw}
+  .brand{display:flex;align-items:center;gap:1.1vw}
+  .logo{width:3.4vw;height:3.4vw;min-width:38px;min-height:38px;border-radius:.8vw;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;color:#fff;
+    font-size:2.2vw;box-shadow:0 .4vh 2vh rgba(255,106,26,.45)}
+  .brand b{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;
+    font-size:2vw;letter-spacing:.2px}
+  .fs{background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--txt2);
+    font:inherit;font-size:1.1vw;padding:1.1vh 1.4vw;border-radius:.7vw;cursor:pointer;
+    backdrop-filter:blur(6px);transition:.2s}
+  .fs:hover{background:rgba(255,255,255,.14);color:var(--txt)}
+
+  .tag{position:absolute;left:3.5vw;bottom:4vh;z-index:5;max-width:60vw}
+  .tag .kick{color:var(--accent);font-weight:700;font-size:1.3vw;
+    text-transform:uppercase;letter-spacing:.18em;margin-bottom:.6vh}
+  .tag h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+    font-size:3.2vw;line-height:1;text-shadow:0 .4vh 3vh rgba(0,0,0,.6)}
+
+  .start{position:absolute;inset:0;z-index:9;display:none;
+    align-items:center;justify-content:center;background:rgba(8,9,14,.85)}
+  .start.show{display:flex}
+  .start button{font:inherit;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+    font-size:1.8vw;color:#fff;border:none;cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    padding:2.2vh 3.5vw;border-radius:1vw;box-shadow:0 1vh 4vh rgba(255,106,26,.5)}
+
+  @media(max-width:760px){
+    .logo{font-size:6vw}.brand b{font-size:5vw}.fs{font-size:3.4vw;padding:1.2vh 4vw}
+    .tag .kick{font-size:3.4vw}.tag h1{font-size:7vw}.tag{max-width:88vw}
+    .start button{font-size:5vw}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <video id="vid" src="Utilização_da_prensa_reduzido.mp4" muted playsinline preload="auto"></video>
+
+  <div class="veil"></div>
+
+  <div class="top">
+    <div class="brand"><div class="logo">O</div><b>Oba Hortifruti</b></div>
+    <button class="fs" onclick="toggleFs()">⛶ Tela cheia</button>
+  </div>
+
+  <div class="tag">
+    <div class="kick">Logística Reversa &amp; Sustentabilidade</div>
+    <h1>Utilização<br>da Prensa</h1>
+  </div>
+
+  <div class="start" id="start">
+    <button onclick="manualPlay()">▶ Tocar</button>
+  </div>
+</div>
+
+<script>
+  const v = document.getElementById('vid');
+  const start = document.getElementById('start');
+
+  const HOLD = 3.0;
+  const SLOW_FROM = 1.4;
+  const SLOW_RATE = 0.55;
+
+  let restarting = false;
+
+  v.addEventListener('timeupdate', () => {
+    if (!v.duration) return;
+    const left = v.duration - v.currentTime;
+    v.playbackRate = (left <= SLOW_FROM) ? SLOW_RATE : 1;
+  });
+
+  v.addEventListener('ended', () => {
+    if (restarting) return;
+    restarting = true;
+    setTimeout(() => {
+      v.currentTime = 0;
+      v.playbackRate = 1;
+      v.play().catch(()=>{});
+      restarting = false;
+    }, HOLD * 1000);
+  });
+
+  function tryPlay(){
+    v.muted = true;
+    const p = v.play();
+    if (p && p.catch) p.then(()=>start.classList.remove('show'))
+                       .catch(()=>start.classList.add('show'));
+  }
+  function manualPlay(){ v.muted = true; v.play().then(()=>start.classList.remove('show')).catch(()=>{}); }
+
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tryPlay(); });
+  window.addEventListener('load', tryPlay);
+  tryPlay();
+
+  function toggleFs(){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+  document.addEventListener('click', ()=>{ if(v.paused) manualPlay(); });
+</script>
+</body>
+</html>
